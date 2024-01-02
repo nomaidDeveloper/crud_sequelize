@@ -2,11 +2,10 @@
 import express from 'express'
 const router = express.Router();
 import user from './user.routes';
-import book from './book.routes';
+import chat from './chat.routes';
 
 
 router.use('/user', user);
-router.use('/book', book);
-
+router.use('/chat', chat);
 
 module.exports = router

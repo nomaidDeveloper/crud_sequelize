@@ -1,12 +1,24 @@
+import { Op } from 'sequelize';
 import jwt from "jsonwebtoken";
 const db = require("../models");
 const User = db.users;
 import bcrypt from "bcrypt";
 
-// Signup (Create a new user)
+
 export const createUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password,gender,phone } = req.body;
+
+    // Validate required fields
+    if (!name || !email || !password && !phone&& !gender) {
+      return res.status(400).json({ message: "All fields are required." });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Invalid email format." });
+    }
 
     // Check if the email is already in use
     const existingUser = await User.findOne({ where: { email } });
@@ -23,16 +35,22 @@ export const createUser = async (req, res) => {
       name,
       email,
       password: hashedPassword,
+      gender,
+      phone
     };
 
     const user = await User.create(newUser);
 
-    res.status(201).json(user);
+    res.status(201).send({
+      message: "User created successfully",
+      data:user
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Signup failed" });
   }
 };
+
 
 // Login (Authenticate user)
 export const loginUser = async (req, res) => {
@@ -48,20 +66,69 @@ export const loginUser = async (req, res) => {
 
     // Create a JWT token for authentication
     const token = jwt.sign({ id: user.id }, "your-secret-key", {
-      expiresIn: "1h", // Token expiration time
+      expiresIn: "8h", // Token expiration time
     });
 
     res.status(200).json({
       message: "Login successful",
-      token,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-      },
+      user:user,
+      token:token,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Login failed" });
+  }
+};
+
+
+// ...
+
+export const userList = async (req, res) => {
+  try {
+   
+    const users = await User.findAll({
+     
+    });
+
+    res.status(200).json({
+      message: 'Successful',
+      users,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error occurred while fetching users' });
+  }
+};
+
+
+export const userSearch = async (req, res) => {
+  try {
+    const { name, email, phone } = req.query;
+
+    const whereClause = {};
+
+    if (name) {
+      whereClause.name = { [Op.like]: `%${name}%` };
+    }
+
+    if (email) {
+      whereClause.email = { [Op.like]: `%${email}%` };
+    }
+
+    if (phone) {
+      whereClause.phone = { [Op.eq]: phone };
+    }
+
+    const users = await User.findAll({
+      where: whereClause,
+    });
+
+    res.status(200).json({
+      message: 'Successful',
+      users,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error occurred while fetching users' });
   }
 };

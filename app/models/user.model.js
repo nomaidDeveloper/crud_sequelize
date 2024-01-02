@@ -4,31 +4,34 @@ module.exports = (sequelize, Sequelize) => {
   const User = sequelize.define("user", {
     name: {
       type: Sequelize.STRING,
-      allowNull: false, // Assuming a name is required
+      allowNull: false,
     },
     email: {
       type: Sequelize.STRING,
-      allowNull: false, // Assuming an email is required
-      unique: true, // Assuming email should be unique
+      allowNull: false,
+      unique: true,
       validate: {
-        isEmail: true, // Add email validation if needed
+        isEmail: true,
       },
     },
     password: {
       type: Sequelize.STRING,
-      allowNull: false, // Assuming a password is required
+      allowNull: false,
+    },
+    phone: {
+      type: Sequelize.INTEGER, // Corrected data type to INTEGER
+    },
+    gender: {
+      type: Sequelize.STRING,
     },
     createdAt: {
       type: Sequelize.DATE,
-      defaultValue: Sequelize.NOW, // Use Sequelize's NOW to set the current date/time by default
+      defaultValue: Sequelize.NOW,
     },
-    city: {
-      type: Sequelize.STRING,
+    updatedAt: {
+      type: Sequelize.DATE,
+      allowNull: true,
     },
-    published: {
-      type: Sequelize.BOOLEAN,
-      defaultValue: false,
-    }
   });
 
   User.prototype.validPassword = function (password) {
